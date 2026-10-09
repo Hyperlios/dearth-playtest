@@ -34,6 +34,22 @@ function installIndexUploadCompatibility() {
   }
 }
 installIndexUploadCompatibility();
+const mobileLayout = matchMedia('(pointer:coarse)').matches || location.search.includes('phone=1');
+window.dearthViewportSize = () => {
+  const frame = document.querySelector('#game-frame');
+  return JSON.stringify([Math.round(frame.clientWidth), Math.round(frame.clientHeight)]);
+};
+function resizeGameCanvas() {
+  const frame = document.querySelector('#game-frame');
+  const canvas = document.querySelector('#canvas');
+  const ratio = Math.min(window.devicePixelRatio || 1, 2);
+  const width = Math.round(frame.clientWidth * ratio), height = Math.round(frame.clientHeight * ratio);
+  if (canvas.width !== width) canvas.width = width;
+  if (canvas.height !== height) canvas.height = height;
+}
+window.addEventListener('resize', resizeGameCanvas);
+window.visualViewport?.addEventListener('resize', resizeGameCanvas);
+resizeGameCanvas();
 const statusText = document.querySelector('#status');
 const startButton = document.querySelector('#start');
 const progress = document.querySelector('#progress');
@@ -77,12 +93,18 @@ async function prepare() {
     if(missing.length)throw new Error('浏览器缺少 '+missing.join('、'));
     const response=await download('assets.json');if(!response.ok)throw new Error('资源清单无法下载');
     manifest=await response.json();
-    engine=new Engine({executable:'godot',canvas:document.querySelector('#canvas'),canvasResizePolicy:2,focusCanvas:true,persistentPaths:['/userfs'],onPrint:console.log,onPrintError:console.error,onExit:code=>{if(code!==0)fail(new Error('游戏退出：'+code));}});
+    engine=new Engine({executable:'godot',canvas:document.querySelector('#canvas'),canvasResizePolicy:0,focusCanvas:true,persistentPaths:['/userfs'],onPrint:console.log,onPrintError:console.error,onExit:code=>{if(code!==0)fail(new Error('游戏退出：'+code));}});
     await engine.init('godot');
     const pack=await (await window.dearthAssetResponse('pack')).arrayBuffer();
     if(pack.byteLength!==manifest.pack.bytes)throw new Error('游戏内容不完整');
     await engine.preloadFile(pack,'dearth.pck');
-    await engine.preloadFile(new TextEncoder().encode('[display]\nwindow/size/mode=0\n[input_devices]\npointing/emulate_mouse_from_touch=true\n'), 'override.cfg');
+    const config = '[application]\nrun/main_scene="res://mobile_boot.tscn"\n[display]\nwindow/size/mode=0\n' + (mobileLayout ? `window/size/viewport_width=${JSON.parse(window.dearthViewportSize())[0]}\nwindow/size/viewport_height=${JSON.parse(window.dearthViewportSize())[1]}\n` : '') + '[input_devices]\npointing/emulate_mouse_from_touch=true\n';
+    await engine.preloadFile(new TextEncoder().encode(config), 'override.cfg');
+    for (const [url, path] of [['mobile.pck?v=3','mobile.pck'], ['mobile-src/boot.gd?v=3','mobile_boot.gd'], ['mobile-src/boot.tscn?v=3','mobile_boot.tscn']]) {
+      const patch = await download(url);
+      if (!patch.ok) throw new Error('手机界面资源加载失败');
+      await engine.preloadFile(await patch.arrayBuffer(), path);
+    }
     ready=true;busy=false;startButton.disabled=false;startButton.textContent='进入荒年';progress.value=1;
     statusText.textContent='准备好了。点击进入，启用游戏与声音。';
   } catch(error){fail(error);}
@@ -94,7 +116,7 @@ async function launch(){
     await engine.start({args:['--main-pack','dearth.pck']});
     document.querySelector('#cover').hidden=true;document.querySelector('#cover').style.display='none';
     document.querySelector('#canvas').focus();
-    if(matchMedia('(pointer:coarse)').matches)document.querySelector('#mobile-tools').style.display='flex';
+    document.querySelector('#mobile-tools').style.display='none';
     window.dearthRunning=true;
   }catch(error){running=false;fail(error);}
 }
