@@ -35,20 +35,33 @@ function installIndexUploadCompatibility() {
 }
 installIndexUploadCompatibility();
 const mobileLayout = matchMedia('(pointer:coarse)').matches || location.search.includes('phone=1');
-window.dearthViewportSize = () => {
-  const frame = document.querySelector('#game-frame');
-  return JSON.stringify([Math.round(frame.clientWidth), Math.round(frame.clientHeight)]);
-};
+// CSS safe-area bounds can change independently of window.resize on Safari.
+// Keep the backing buffer and the Godot logical size derived from the same box.
+const gameFrame = document.querySelector('#game-frame');
+const gameCanvas = document.querySelector('#canvas');
 function resizeGameCanvas() {
-  const frame = document.querySelector('#game-frame');
-  const canvas = document.querySelector('#canvas');
+  const rect = gameFrame.getBoundingClientRect();
+  const logicalWidth = Math.max(1, Math.round(rect.width));
+  const logicalHeight = Math.max(1, Math.round(rect.height));
   const ratio = Math.min(window.devicePixelRatio || 1, 2);
-  const width = Math.round(frame.clientWidth * ratio), height = Math.round(frame.clientHeight * ratio);
-  if (canvas.width !== width) canvas.width = width;
-  if (canvas.height !== height) canvas.height = height;
+  const width = Math.max(1, Math.round(rect.width * ratio));
+  const height = Math.max(1, Math.round(rect.height * ratio));
+  if (gameCanvas.width !== width) gameCanvas.width = width;
+  if (gameCanvas.height !== height) gameCanvas.height = height;
+  return [logicalWidth, logicalHeight];
 }
+// Also called by the game before applying its logical viewport size: a missed
+// browser event must never update the UI size while leaving stale canvas pixels.
+window.dearthViewportSize = () => JSON.stringify(resizeGameCanvas());
+const canvasSizeObserver = new ResizeObserver(resizeGameCanvas);
+canvasSizeObserver.observe(gameFrame);
 window.addEventListener('resize', resizeGameCanvas);
+window.addEventListener('orientationchange', resizeGameCanvas);
+window.addEventListener('pageshow', resizeGameCanvas);
 window.visualViewport?.addEventListener('resize', resizeGameCanvas);
+document.addEventListener('visibilitychange', () => {
+  if (!document.hidden) resizeGameCanvas();
+});
 resizeGameCanvas();
 const statusText = document.querySelector('#status');
 const startButton = document.querySelector('#start');
@@ -100,7 +113,7 @@ async function prepare() {
     await engine.preloadFile(pack,'dearth.pck');
     const config = '[application]\nrun/main_scene="res://mobile_boot.tscn"\n[display]\nwindow/size/mode=0\n' + (mobileLayout ? `window/size/viewport_width=${JSON.parse(window.dearthViewportSize())[0]}\nwindow/size/viewport_height=${JSON.parse(window.dearthViewportSize())[1]}\n` : '') + '[input_devices]\npointing/emulate_mouse_from_touch=true\n';
     await engine.preloadFile(new TextEncoder().encode(config), 'override.cfg');
-    for (const [url, path] of [['mobile.pck?v=3','mobile.pck'], ['mobile-src/boot.gd?v=3','mobile_boot.gd'], ['mobile-src/boot.tscn?v=3','mobile_boot.tscn']]) {
+    for (const [url, path] of [['mobile.pck?v=4','mobile.pck'], ['mobile-src/boot.gd?v=4','mobile_boot.gd'], ['mobile-src/boot.tscn?v=4','mobile_boot.tscn']]) {
       const patch = await download(url);
       if (!patch.ok) throw new Error('手机界面资源加载失败');
       await engine.preloadFile(await patch.arrayBuffer(), path);
@@ -113,7 +126,9 @@ function fullscreen(){const target=document.documentElement;if(target.requestFul
 async function launch(){
   if(running)return;running=true;startButton.disabled=true;
   try{
+    resizeGameCanvas();
     await engine.start({args:['--main-pack','dearth.pck']});
+    resizeGameCanvas();
     document.querySelector('#cover').hidden=true;document.querySelector('#cover').style.display='none';
     document.querySelector('#canvas').focus();
     document.querySelector('#mobile-tools').style.display='none';
