@@ -1,4 +1,39 @@
 'use strict';
+// Godot 4.7.2 mesh_surface_update_index_region uploads index data through
+// ARRAY_BUFFER (drivers/gles3/storage/mesh_storage.cpp). Native GL allows this,
+// WebGL does not. Use WebGL2's copy target for that upload, preserving the VAO
+// element binding, original array binding, and previous copy target binding.
+function installIndexUploadCompatibility() {
+  const proto = window.WebGL2RenderingContext?.prototype;
+  if (!proto) return;
+  const contexts = new WeakMap();
+  const bind = proto.bindBuffer;
+  const state = gl => {
+    if (!contexts.has(gl)) contexts.set(gl, {indices:new WeakSet(), redirect:false, previous:null});
+    return contexts.get(gl);
+  };
+  proto.bindBuffer = function(target, buffer) {
+    const s = state(this);
+    if (target === this.ARRAY_BUFFER) {
+      if (s.redirect) bind.call(this, this.COPY_WRITE_BUFFER, s.previous);
+      s.redirect = Boolean(buffer && s.indices.has(buffer));
+      if (s.redirect) {
+        s.previous = this.getParameter(this.COPY_WRITE_BUFFER_BINDING);
+        return bind.call(this, this.COPY_WRITE_BUFFER, buffer);
+      }
+    }
+    if (target === this.ELEMENT_ARRAY_BUFFER && buffer) s.indices.add(buffer);
+    return bind.call(this, target, buffer);
+  };
+  for (const method of ['bufferData', 'bufferSubData', 'getBufferSubData', 'getBufferParameter']) {
+    const original = proto[method];
+    proto[method] = function(target, ...args) {
+      if (target === this.ARRAY_BUFFER && state(this).redirect) target = this.COPY_WRITE_BUFFER;
+      return original.call(this, target, ...args);
+    };
+  }
+}
+installIndexUploadCompatibility();
 const statusText = document.querySelector('#status');
 const startButton = document.querySelector('#start');
 const progress = document.querySelector('#progress');

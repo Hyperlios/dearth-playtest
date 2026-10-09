@@ -6,6 +6,9 @@
 
 发布来源：main 分支，根目录 /。`.nojekyll` 保证直接发布静态文件。
 
+在线试玩：https://hyperlios.github.io/dearth-playtest/godot/
+本目录部署在仓库的 `godot/`，根目录的旧版网页保留。
+
 全部游戏文件使用相对路径，兼容 GitHub Pages 的仓库子路径。
 首次加载约 110 MB，建议使用 Wi-Fi；iPhone 横屏、Safari 打开。
 这次沿用电脑试玩版界面，未完成 iPhone 真机验收。
@@ -18,4 +21,5 @@
 - `licenses/`：Godot 与字体第三方许可。
 
 原始游戏包内容未改动；只有浏览器窗口模式与触摸模拟兼容设置。
+加载层另含 Godot 4.7.2 索引缓冲上传兼容修正：通过 WebGL2 COPY_WRITE_BUFFER 更新索引数据，并保留原有绑定，避免 ARRAY_BUFFER 类型冲突。浏览器绘制告警与绑定/数据读回均已验证。
 GitHub Pages 托管的是游戏网页，朋友无需 GitHub 登录或安装 Godot。
