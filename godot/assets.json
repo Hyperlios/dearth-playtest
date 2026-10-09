@@ -1,0 +1,91 @@
+{
+  "wasm": {
+    "bytes": 39514754,
+    "downloadBytes": 10114291,
+    "sha256": "fc74679e3b97f76878947fcd4fbe1268cbfa6188182a2e33bbc3f5dc9bfa57d0",
+    "parts": [
+      {
+        "file": "wasm-00.bin",
+        "bytes": 8388608,
+        "sha256": "2882f75020bd7751ba05976e475802630f207394f5dbbacc8951194d36eb4f8b"
+      },
+      {
+        "file": "wasm-01.bin",
+        "bytes": 1725683,
+        "sha256": "13bb481e9d9a96beb418ec705d9bdfcaf758461757cdcd32b9e987af552c4363"
+      }
+    ]
+  },
+  "pack": {
+    "bytes": 104015832,
+    "downloadBytes": 103079321,
+    "sha256": "f6a14c6089ef34cf8648509579594bcb8653d936a12f79ea5a1e8f478e0df89f",
+    "parts": [
+      {
+        "file": "pack-00.bin",
+        "bytes": 8388608,
+        "sha256": "bb898efbaef11dcc65d031dfaa61e63ea68894503ecfb913be28e6db774c0bd6"
+      },
+      {
+        "file": "pack-01.bin",
+        "bytes": 8388608,
+        "sha256": "f7a9cfd89e613dd94f96ecb433606567575a95b57c7ad0aa1a29bee7996bc150"
+      },
+      {
+        "file": "pack-02.bin",
+        "bytes": 8388608,
+        "sha256": "f25d25a9fb31d07d4196fd6e41ac1a1981dc655503480851b92f35680b580617"
+      },
+      {
+        "file": "pack-03.bin",
+        "bytes": 8388608,
+        "sha256": "49113c4f19fdf6b7da13ecd348a3d21883e9573a4a404f20dc69f7f40a88039b"
+      },
+      {
+        "file": "pack-04.bin",
+        "bytes": 8388608,
+        "sha256": "e4937c18b7776b5cb2ecd0b41bd07e884e49c0abc30f95cd80251f86b022a9f8"
+      },
+      {
+        "file": "pack-05.bin",
+        "bytes": 8388608,
+        "sha256": "7a8f28817347fbfdb2763d0da3ef7e8651b340ad0cbb25f30f19967af5cc959e"
+      },
+      {
+        "file": "pack-06.bin",
+        "bytes": 8388608,
+        "sha256": "d3dc8cda369d07a6d1dcb4ccea198a9791c967bc0c19eb0a1e621f7e33d33468"
+      },
+      {
+        "file": "pack-07.bin",
+        "bytes": 8388608,
+        "sha256": "bd1decb6ecf8b6d50c978bac1f31331bbea1bc293925c724a8f880c05e6da138"
+      },
+      {
+        "file": "pack-08.bin",
+        "bytes": 8388608,
+        "sha256": "52e1b143097a4ee2959146fa76fdd2c0e4104d22ada05dd480a064fd2305be2f"
+      },
+      {
+        "file": "pack-09.bin",
+        "bytes": 8388608,
+        "sha256": "9df09d7d7ba185a7de890c97b15378b53b4d156a1a4eb0e918a21a58354a1e06"
+      },
+      {
+        "file": "pack-10.bin",
+        "bytes": 8388608,
+        "sha256": "c5df24fc20a9c11b95a8acdbc3952ca7a80d8be7a0d2cc1f3554680de9c3cbfd"
+      },
+      {
+        "file": "pack-11.bin",
+        "bytes": 8388608,
+        "sha256": "4bbca1f51dd176c99601c4e0d57939330a1d643cedeafe5cd9d467a8b78db3b6"
+      },
+      {
+        "file": "pack-12.bin",
+        "bytes": 2416025,
+        "sha256": "c8718bd1d85bbd60bb54878a00a90e84e846f54f0c5f60c9c8a8e0f6fd7fba3c"
+      }
+    ]
+  }
+}
